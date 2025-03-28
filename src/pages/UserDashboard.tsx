@@ -189,7 +189,12 @@ const UserDashboard = () => {
                 {/* List View Section */}
                 <Card sx={{ flex: 2, height: "85vh", borderRadius: 3, boxShadow: 3 }}>
                     {loading && (
-                        <CircularProgress size={40}></CircularProgress>
+                        <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+                            <CircularProgress sx={{ alignSelf: "center", marginTop: 2 }} size={30} />
+                            <Typography variant="body2" sx={{ textAlign: "center", mt: 2 }}>
+                                Please wait while we load the parking spots. It may take a few seconds as the service may be dormant.
+                            </Typography>
+                        </Box>
                     )}
                     {!loading && (
                         <Box sx={{ p: 2 }}>
@@ -255,8 +260,7 @@ const UserDashboard = () => {
                                                 />
                                                 {spot.is_available && (
                                                     <Button variant="contained" color="primary" size="small" onClick={() => handleOpenDialog(spot)}>
-                                                        {reserving && <CircularProgress size="30px"></CircularProgress>}
-                                                        {!reserving && "Reserve"}
+                                                        Reserve
                                                     </Button>
                                                 )}
                                             </Box>
@@ -277,7 +281,10 @@ const UserDashboard = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseDialog} color="secondary">Cancel</Button>
-                    <Button onClick={handleConfirmReservation} color="primary">Proceed</Button>
+                    {reserving && <CircularProgress size={24} />}
+                    {!reserving && (
+                        <Button onClick={handleConfirmReservation} color="primary">Proceed</Button>
+                    )}
                 </DialogActions>
             </Dialog>
         </Box>
