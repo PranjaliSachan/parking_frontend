@@ -20,6 +20,7 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
+    CircularProgress,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 
@@ -64,6 +65,8 @@ const MapUpdater = ({ selectedSpot }: { selectedSpot: ParkingSpot | null }) => {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const UserDashboard = () => {
+    const [loading, setLoading] = useState<boolean>(false);
+    const [reserving, setReserving] = useState<boolean>(false);
     const [parkingSpots, setParkingSpots] = useState<ParkingSpot[]>([]);
     const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(null);
     const [searchQuery, setSearchQuery] = useState<string>("");
@@ -71,13 +74,18 @@ const UserDashboard = () => {
     const [selectedForReservation, setSelectedForReservation] = useState<ParkingSpot | null>(null);
 
     useEffect(() => {
+        setLoading(true);
         axios
             .get(`${API_BASE_URL}/api/spots/`)
             .then((response) => {
                 setParkingSpots(response.data);
                 setSelectedSpot(response.data[0]); // Auto-select first spot
+                setLoading(false);
             })
-            .catch((error) => console.error("Error fetching parking spots:", error));
+            .catch((error) => {
+                console.error("Error fetching parking spots:", error);
+                setLoading(false);
+            });
     }, []);
 
     // Extract unique street names from parking spots for auto-complete
@@ -104,6 +112,7 @@ const UserDashboard = () => {
     const handleConfirmReservation = async () => {
         if (!selectedForReservation) return;
 
+        setReserving(true);
         const userId = 1; // Replace with actual user ID from authentication
         const startTime = new Date().toISOString();
         const endTime = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1-hour reservation
@@ -129,13 +138,14 @@ const UserDashboard = () => {
                         spot.id === selectedForReservation.id ? { ...spot, is_available: false } : spot
                     )
                 );
-
+                setReserving(false);
                 setOpenDialog(false);
             }
         }
         /* eslint-disable  @typescript-eslint/no-explicit-any */
         catch (error: any) {
             alert("Reservation failed: " + (error.response?.data?.error || "Unknown error"));
+            setReserving(false);
         }
     };
 
@@ -178,78 +188,84 @@ const UserDashboard = () => {
 
                 {/* List View Section */}
                 <Card sx={{ flex: 2, height: "85vh", borderRadius: 3, boxShadow: 3 }}>
-                    <Box sx={{ p: 2 }}>
-                        {/* Search Bar (Autocomplete based on Street Names) */}
-                        <Autocomplete
-                            options={uniqueStreets}
-                            freeSolo
-                            onInputChange={(_, value) => setSearchQuery(value)}
-                            renderInput={(params) => (
-                                <TextField
-                                    {...params}
-                                    fullWidth
-                                    variant="outlined"
-                                    placeholder="Search Parking Spots..."
-                                    InputProps={{
-                                        ...params.InputProps,
-                                        startAdornment: (
-                                            <InputAdornment position="start">
-                                                <SearchIcon />
-                                            </InputAdornment>
-                                        ),
-                                        sx: {
-                                            borderRadius: "50px",
-                                            backgroundColor: "#f0f0f0",
-                                        },
-                                    }}
-                                />
-                            )}
-                        />
-
-                        <Typography variant="h5" sx={{ mt: 2, mb: 2 }}>
-                            Available Parking Spots
-                        </Typography>
-
-                        <Paper elevation={3} sx={{ maxHeight: "68vh", overflowY: "auto" }}>
-                            <List>
-                                {filteredSpots.map((spot) => (
-                                    <ListItem
-                                        component="li"  // Ensures correct HTML tag usage
-                                        key={spot.id}
-                                        onClick={() => setSelectedSpot(spot)}
-                                        sx={{
-                                            backgroundColor: selectedSpot?.id === spot.id ? "#e3f2fd" : "transparent",
-                                            borderLeft: selectedSpot?.id === spot.id ? "5px solid blue" : "none",
-                                            transition: "0.3s",
-                                            display: "flex",
-                                            justifyContent: "space-between",
-                                            alignItems: "center",
+                    {loading && (
+                        <CircularProgress size={40}></CircularProgress>
+                    )}
+                    {!loading && (
+                        <Box sx={{ p: 2 }}>
+                            {/* Search Bar (Autocomplete based on Street Names) */}
+                            <Autocomplete
+                                options={uniqueStreets}
+                                freeSolo
+                                onInputChange={(_, value) => setSearchQuery(value)}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        fullWidth
+                                        variant="outlined"
+                                        placeholder="Search Parking Spots..."
+                                        InputProps={{
+                                            ...params.InputProps,
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <SearchIcon />
+                                                </InputAdornment>
+                                            ),
+                                            sx: {
+                                                borderRadius: "50px",
+                                                backgroundColor: "#f0f0f0",
+                                            },
                                         }}
-                                    >
-                                        <Box>
-                                            <Typography variant="body1">{spot.location}</Typography>
-                                            <Typography variant="body2">${spot.price_per_hour}/hr</Typography>
-                                        </Box>
-                                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                            <Box
-                                                sx={{
-                                                    width: 10,
-                                                    height: 10,
-                                                    borderRadius: "50%",
-                                                    backgroundColor: spot.is_available ? "green" : "red",
-                                                }}
-                                            />
-                                            {spot.is_available && (
-                                                <Button variant="contained" color="primary" size="small" onClick={() => handleOpenDialog(spot)}>
-                                                    Reserve
-                                                </Button>
-                                            )}
-                                        </Box>
-                                    </ListItem>
-                                ))}
-                            </List>
-                        </Paper>
-                    </Box>
+                                    />
+                                )}
+                            />
+
+                            <Typography variant="h5" sx={{ mt: 2, mb: 2 }}>
+                                Available Parking Spots
+                            </Typography>
+
+                            <Paper elevation={3} sx={{ maxHeight: "68vh", overflowY: "auto" }}>
+                                <List>
+                                    {filteredSpots.map((spot) => (
+                                        <ListItem
+                                            component="li"  // Ensures correct HTML tag usage
+                                            key={spot.id}
+                                            onClick={() => setSelectedSpot(spot)}
+                                            sx={{
+                                                backgroundColor: selectedSpot?.id === spot.id ? "#e3f2fd" : "transparent",
+                                                borderLeft: selectedSpot?.id === spot.id ? "5px solid blue" : "none",
+                                                transition: "0.3s",
+                                                display: "flex",
+                                                justifyContent: "space-between",
+                                                alignItems: "center",
+                                            }}
+                                        >
+                                            <Box>
+                                                <Typography variant="body1">{spot.location}</Typography>
+                                                <Typography variant="body2">${spot.price_per_hour}/hr</Typography>
+                                            </Box>
+                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                                <Box
+                                                    sx={{
+                                                        width: 10,
+                                                        height: 10,
+                                                        borderRadius: "50%",
+                                                        backgroundColor: spot.is_available ? "green" : "red",
+                                                    }}
+                                                />
+                                                {spot.is_available && (
+                                                    <Button variant="contained" color="primary" size="small" onClick={() => handleOpenDialog(spot)}>
+                                                        {reserving && <CircularProgress size="30px"></CircularProgress>}
+                                                        {!reserving && "Reserve"}
+                                                    </Button>
+                                                )}
+                                            </Box>
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </Paper>
+                        </Box>
+                    )}
                 </Card>
             </Box>
 
