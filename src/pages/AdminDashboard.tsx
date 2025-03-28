@@ -32,6 +32,8 @@ interface ParkingSpot {
     is_available: boolean;
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const AdminDashboard = () => {
     const [parkingSpots, setParkingSpots] = useState<ParkingSpot[]>([]);
     const [filteredSpots, setFilteredSpots] = useState<ParkingSpot[]>([]);
@@ -43,7 +45,7 @@ const AdminDashboard = () => {
     const [sortOption, setSortOption] = useState<string>("");
 
     useEffect(() => {
-        axios.get("/api/spots/").then((response) => {
+        axios.get(`${API_BASE_URL}/api/spots/`).then((response) => {
             setParkingSpots(response.data);
             setFilteredSpots(response.data);
         });

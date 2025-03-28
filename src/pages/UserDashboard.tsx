@@ -61,6 +61,8 @@ const MapUpdater = ({ selectedSpot }: { selectedSpot: ParkingSpot | null }) => {
     return null;
 };
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const UserDashboard = () => {
     const [parkingSpots, setParkingSpots] = useState<ParkingSpot[]>([]);
     const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(null);
@@ -70,7 +72,7 @@ const UserDashboard = () => {
 
     useEffect(() => {
         axios
-            .get("/api/spots/")
+            .get(`${API_BASE_URL}/api/spots/`)
             .then((response) => {
                 setParkingSpots(response.data);
                 setSelectedSpot(response.data[0]); // Auto-select first spot
@@ -108,7 +110,7 @@ const UserDashboard = () => {
         const totalPrice = selectedForReservation.price_per_hour * 1; // Assume 1 hour
 
         try {
-            const response = await axios.post("/api/reserve/", {
+            const response = await axios.post(`${API_BASE_URL}/api/reserve/`, {
                 user: userId, // Send user ID, not email
                 parking_spot: selectedForReservation.id,
                 start_time: startTime,
