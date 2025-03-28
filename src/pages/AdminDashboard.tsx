@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
 import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import {
@@ -31,6 +32,13 @@ interface ParkingSpot {
     price_per_hour: number;
     is_available: boolean;
 }
+
+// Default marker
+const defaultIcon = new L.Icon({
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+});
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -110,7 +118,7 @@ const AdminDashboard = () => {
                     <MapContainer center={[40.428, -79.922]} zoom={16} style={{ height: "100%", width: "100%" }}>
                         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                         {parkingSpots.map((spot) => (
-                            <Marker key={spot.id} position={[spot.latitude, spot.longitude]}>
+                            <Marker key={spot.id} position={[spot.latitude, spot.longitude]} icon={defaultIcon}>
                                 <Popup>
                                     <Typography variant="h6">{spot.location}</Typography>
                                     <Typography>Status: {spot.is_available ? "Available" : "Reserved"}</Typography>
