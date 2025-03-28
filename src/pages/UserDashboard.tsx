@@ -191,7 +191,7 @@ const UserDashboard = () => {
                     {loading && (
                         <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
                             <CircularProgress sx={{ alignSelf: "center", marginTop: 2 }} size={30} />
-                            <Typography variant="body2" sx={{ textAlign: "center", mt: 2 }}>
+                            <Typography variant="body2" sx={{ textAlign: "center", mt: 2, mx: 2 }}>
                                 Please wait while we load the parking spots. It may take a few seconds as the service may be dormant.
                             </Typography>
                         </Box>
@@ -281,7 +281,7 @@ const UserDashboard = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseDialog} color="secondary">Cancel</Button>
-                    {reserving && <CircularProgress size={24} />}
+                    {reserving && <CircularProgress sx={{ mx: 2 }} size={24} />}
                     {!reserving && (
                         <Button onClick={handleConfirmReservation} color="primary">Proceed</Button>
                     )}
